@@ -413,4 +413,25 @@ SELECT nombre, precio FROM productos ORDER BY precio DESC LIMIT 1;
 
 -- 8. Obtén el total de pedidos realizados por cada cliente, mostrando el ID del cliente y el total de pedidos.
 
-SELECT cliente_id, COUNT(pedido_id) AS total FROM pedidos GROUP BY cliente_id;
+SELECT cliente_id, COUNT(pedido_id) as total FROM pedidos GROUP BY cliente_id;
+
+-- 9. Calcula el promedio de salario de todos los empleados en la empresa.
+
+SELECT AVG(salario) AS promedio_salario FROM empleados;
+
+-- 10. Encuentra el número de productos en cada categoría, mostrando la categoría y el número de productos.
+
+SELECT categoria, COUNT(producto_id) as cantidad_productos FROM productos GROUP BY categoria;
+
+-- 11. Obtén una lista de productos con un precio mayor a $75 USD, mostrando solo el nombre, el precio y su respectivo precio en USD.
+
+SELECT nombre, precio, (precio/4100) as precio_dolares FROM productos WHERE (precio/4100) > 75;
+
+-- 12. Lista todos los proveedores registrados.
+
+SELECT * FROM proveedores;
+
+-- *******************************************************
+### Consultas multitabla joins
+-- *******************************************************
+
