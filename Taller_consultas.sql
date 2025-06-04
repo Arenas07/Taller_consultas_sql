@@ -434,4 +434,127 @@ SELECT * FROM proveedores;
 -- *******************************************************
 ### Consultas multitabla joins
 -- *******************************************************
+-- 1. Encuentra los nombres de los clientes y los detalles de sus pedidos.
+SELECT u.nombre AS cliente, p.pedido_id, dp.detalle_id, dp.cantidad, pr.nombre AS producto 
+FROM usuarios as u
+JOIN pedidos as p ON u.usuario_id = p.cliente_id
+JOIN detalles_pedidos as dp ON p.pedido_id = dp.pedido_id 
+JOIN productos as pr ON dp.producto_id = pr.producto_id;
 
+-- 2. Lista todos los productos pedidos junto con el precio unitario de cada pedido
+
+SELECT pr.nombre as producto, dp.precio_unitario 
+FROM productos as pr 
+JOIN detalles_pedidos as dp ON pr.producto_id = dp.producto_id; 
+
+-- 3. Encuentra los nombres de los clientes y los nombres de los empleados que gestionaron sus pedidos
+
+SELECT cliente.nombre AS cliente, empleado.nombre AS empleado
+FROM pedidos as p
+JOIN usuarios as cliente ON p.cliente_id = cliente.usuario_id
+JOIN empleados as e ON p.empleado_id = e.empleado_id
+JOIN usuarios as empleado ON e.usuario_id = empleado.usuario_id;
+
+-- 4. Muestra todos los pedidos y, si existen, los productos en cada pedido, incluyendo los pedidos sin productos usando `LEFT JOIN`
+
+SELECT * 
+FROM pedidos as p 
+LEFT JOIN detalles_pedidos as dp ON p.pedido_id = dp.pedido_id
+
+-- 5. Encuentra los productos y, si existen, los detalles de pedidos en los que no se ha incluido el producto usando `RIGHT JOIN`.
+SELECT *
+FROM detalles_pedidos as dp
+RIGHT JOIN productos as pr ON pr.producto_id = dp.producto_id;
+
+-- 6. Lista todos los empleados junto con los pedidos que han gestionado, si existen, usando `LEFT JOIN` para ver los empleados sin pedidos.
+
+SELECT e.empleado_id, u.nombre as empleado, p.pedido_id, p.fecha_pedido, p.estado
+FROM empleados as e
+JOIN usuarios as u ON e.usuario_id = u.usuario_id
+LEFT JOIN pedidos as p ON e.empleado_id = p.empleado_id;
+
+-- 7. Encuentra los empleados que no han gestionado ningún pedido usando un `LEFT JOIN` combinado con `WHERE`.
+
+SELECT *
+FROM empleados as e JOIN usuarios as u ON e.usuario_id = u.usuario_id
+LEFT JOIN pedidos as p ON e.empleado_id = p.empleado_id
+WHERE p.pedido_id IS NULL;
+
+-- 8. Calcula el total gastado en cada pedido, mostrando el ID del pedido y el total, usando `JOIN`.
+
+SELECT p.pedido_id, dp.cantidad * dp.precio_unitario as total_venta
+FROM pedidos as p
+JOIN detalles_pedidos as dp ON p.pedido_id = dp.pedido_id;
+
+-- 9. Realiza un `CROSS JOIN` entre clientes y productos para mostrar todas las combinaciones posibles de clientes y productos.
+
+SELECT u.nombre as cliente, p.nombre as producto
+FROM usuarios as u
+JOIN tipos_usuarios as tu ON u.tipo_id = tu.tipo_id
+CROSS JOIN productos as p
+WHERE tu.nombre = 'cliente';
+
+-- 10. Encuentra los nombres de los clientes y los productos que han comprado, si existen, incluyendo los clientes que no han realizado pedidos usando `LEFT JOIN`.
+
+SELECT u.nombre as cliente, pr.nombre as producto
+FROM usuarios as u
+LEFT JOIN pedidos as p ON u.usuario_id = p.cliente_id
+LEFT JOIN detalles_pedidos as dp ON p.pedido_id = dp.pedido_id
+LEFT JOIN productos as pr ON dp.producto_id = pr.producto_id
+
+-- 11. Listar todos los proveedores que suministran un determinado producto.
+
+SELECT pr.nombre as proveedor
+FROM proveedores as pr
+JOIN proveedores_productos as pp ON pr.proveedor_id = pp.proveedor_id
+WHERE pp.producto_id = 1;
+
+-- 12. Obtener todos los productos que ofrece un proveedor específico.
+
+SELECT p.producto_id, p.nombre, p.categoria, p.precio, p.stock
+FROM productos as p
+JOIN proveedores_productos as pp ON p.producto_id = pp.producto_id
+WHERE pp.proveedor_id = 1;
+
+-- 13. Lista los proveedores que no están asociados a ningún producto (es decir, que aún no suministran).
+
+SELECT *
+FROM proveedores as pr
+LEFT JOIN proveedores_productos as pp ON pr.proveedor_id = pp.proveedor_id
+WHERE pp.proveedor_id IS NULL;
+
+-- 14. Contar cuántos proveedores tiene cada producto.
+
+SELECT p.producto_id, p.nombre as producto, COUNT(pp.proveedor_id) as total_proveedores
+FROM productos as p
+LEFT JOIN proveedores_productos pp ON p.producto_id = pp.producto_id
+GROUP BY p.producto_id, p.nombre;
+
+-- 15. Para un proveedor determinado (p. ej. `proveedor_id = 3`), muestra el nombre de todos los productos que suministra.
+
+SELECT p.nombre as producto
+FROM productos as p
+JOIN proveedores_productos as pp ON p.producto_id = pp.producto_id
+WHERE pp.proveedor_id = 3;
+
+-- 16. Para un producto específico (p. ej. `producto_id = 1`), muestra todos los proveedores que lo distribuyen, con sus datos de contacto.
+
+SELECT pr.proveedor_id, pr.nombre, pr.email, pr.telefono, pr.direccion, pr.ciudad, pr.pais
+FROM proveedores as pr
+JOIN proveedores_productos as pp ON pr.proveedor_id = pp.proveedor_id
+WHERE pp.producto_id = 1;
+
+
+-- 17. Cuenta cuántos proveedores tiene cada producto, listando `producto_id`, `nombre` y `cantidad_proveedores`.
+
+SELECT p.producto_id, p.nombre, COUNT(pp.proveedor_id) as total_proveedores
+FROM productos as p
+LEFT JOIN proveedores_productos pp ON p.producto_id = pp.producto_id
+GROUP BY p.producto_id, p.nombre;
+
+-- 18. Cuenta cuántos productos suministra cada proveedor, mostrando `proveedor_id`, `nombre_proveedor` y `total_productos`.
+
+SELECT pr.proveedor_id, pr.nombre as nombre_proveedor, COUNT(pp.producto_id) as total_productos
+FROM proveedores as pr
+LEFT JOIN proveedores_productos as pp ON pr.proveedor_id = pp.proveedor_id
+GROUP BY pr.proveedor_id, pr.nombre;
