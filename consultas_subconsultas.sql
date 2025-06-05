@@ -27,13 +27,35 @@ WHERE pr.producto_id NOT IN(
 
 -- 3. Lista los empleados que han gestionado pedidos en los últimos 6 meses.
 
-USE taller_consultas;
-SELECT * 
-FROM empleados
-
 SELECT * 
 FROM pedidos 
 WHERE fecha_pedido BETWEEN DATE_ADD(CURDATE(), INTERVAL -6 MONTH) AND CURDATE();
 
+-- 4. Encuentra el pedido con el total de ventas más alto.
+USE trabajo_consultas;
 
-SELECT * FROM pedidos;
+SELECT pedido_id, total_venta
+FROM (
+    SELECT p.pedido_id, SUM(dp.cantidad * dp.precio_unitario) AS total_venta
+    FROM detalles_pedidos AS dp
+    INNER JOIN pedidos AS p ON p.pedido_id = dp.pedido_id
+    GROUP BY p.pedido_id
+) AS ventas_por_pedido
+ORDER BY total_venta DESC
+LIMIT 1;
+
+
+-- 5. Muestra los nombres de los clientes que han realizado más pedidos que el promedio de pedidos de todos los clientes.
+
+SELECT u.nombre, COUNT(pe.pedido_id) AS total_pedidos
+FROM usuarios AS u
+INNER JOIN pedidos AS pe ON pe.cliente_id = u.usuario_id
+GROUP BY u.nombre
+HAVING COUNT(pe.pedido_id) > (
+    SELECT AVG(pedidos_cliente)
+    FROM (
+        SELECT COUNT(*) AS pedidos_cliente 
+        FROM pedidos 
+        GROUP BY cliente_id
+    ) AS total
+);
